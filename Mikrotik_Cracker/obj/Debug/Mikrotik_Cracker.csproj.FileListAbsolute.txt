@@ -1,4 +1,3 @@
-C:\Users\Mortalwolf\source\repos\Mikrotik_Cracker\Mikrotik_Cracker\obj\Debug\Mikrotik_Cracker.csprojAssemblyReference.cache
 C:\Users\Mortalwolf\source\repos\Mikrotik_Cracker\Mikrotik_Cracker\obj\Debug\MainWindow.g.cs
 C:\Users\Mortalwolf\source\repos\Mikrotik_Cracker\Mikrotik_Cracker\obj\Debug\App.g.cs
 C:\Users\Mortalwolf\source\repos\Mikrotik_Cracker\Mikrotik_Cracker\obj\Debug\Mikrotik_Cracker_MarkupCompile.cache

@@ -61,10 +61,9 @@ namespace Mikrotik_Cracker
                 try
                 {
 
-                    connection.Open(Ip_Connect, User_Connect, Pass_Connect);
+                    connection.Open(input_IP, input_USER, input_PASS);
 
 
-                    t1.Start();
                     //get Identity
                     ITikCommand cmd = connection.CreateCommand("/system/identity/print");
                     var identity = cmd.ExecuteScalar();
