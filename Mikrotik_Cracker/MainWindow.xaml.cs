@@ -314,7 +314,7 @@ namespace Mikrotik_Cracker
             {
                 if (doneOrFaile == 0)
                 {
-                    textbox_Main.Text += "\n-- Cracking were not Successfuly --";
+                    textbox_Main.Text += "\n-- Cracking was not Successfuly --";
                 }
                 textbox_Main.Text += "\n\n<-- Finished -->";
 
