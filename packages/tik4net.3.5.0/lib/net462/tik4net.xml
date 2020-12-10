@@ -1,0 +1,994 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>tik4net</name>
+    </assembly>
+    <members>
+        <member name="T:tik4net.Api.ApiExtensions">
+            <summary>
+            Connection/command extensions specific for <see cref="T:tik4net.Api.ApiConnection"/>.
+            </summary>
+        </member>
+        <member name="M:tik4net.Api.ApiExtensions.CreateProplistParameter(tik4net.ITikConnection,System.String[])">
+            <summary>
+            Factory method - creates parameters instance specific for connection and command type. Shortcut for a .proplist parameter.
+            </summary>
+            <param name="proplist">Names of the wanted properties</param>
+            <returns>Created parameter with name .proplist and a comma separated property list as value.</returns>
+            <seealso cref="P:tik4net.ITikCommand.Parameters"/>
+        </member>
+        <member name="M:tik4net.Api.ApiExtensions.AddProplistParameter(tik4net.ITikCommand,System.String[])">
+            <summary>
+            Adds new instance of parameter with .proplist to <see cref="!:Parameters"/> list.
+            </summary>
+            <param name="proplist">Names of the wanted properties</param>
+            <returns>Instance of added parameter.</returns>
+        </member>
+        <member name="T:tik4net.ConnectionFactory">
+            <summary>
+            Factory to create and open mikrotik connection of given type.
+            </summary>
+        </member>
+        <member name="M:tik4net.ConnectionFactory.CreateConnection(tik4net.TikConnectionType)">
+            <summary>
+            Creates mikrotik Connection of given type.
+            </summary>
+            <param name="connectionType">Type of technology used to connect to mikrotik router.</param>
+            <returns>Instance of mikrotik Connection.</returns>
+            <seealso cref="M:tik4net.ITikConnection.Open(System.String,System.String,System.String)"/>
+        </member>
+        <member name="M:tik4net.ConnectionFactory.OpenConnection(tik4net.TikConnectionType,System.String,System.String,System.String)">
+            <summary>
+            Creates and opens connection to the specified mikrotik host on default port and perform the logon operation.
+            </summary>
+            <param name="connectionType">Type of technology used to connect to mikrotik router.</param>
+            <param name="host">The host (name or ip).</param>
+            <param name="user">The user.</param>
+            <param name="password">The password.</param>
+            <returns>Opened instance of mikrotik Connection.</returns>
+            <seealso cref="M:tik4net.ITikConnection.Close"/>
+            <exception cref="T:tik4net.TikConnectionLoginException">Invalid credentials.</exception>
+            <exception cref="T:System.Net.Sockets.SocketException">Network connection failed.</exception>
+            <exception cref="T:tik4net.TikCommandTrapException">Some other Tik4Net error.</exception>
+        </member>
+        <member name="M:tik4net.ConnectionFactory.OpenConnection(tik4net.TikConnectionType,System.String,System.Int32,System.String,System.String)">
+            <summary>
+            Creates and opens connection to the specified mikrotik host on specified port and perform the logon operation.
+            </summary>
+            <param name="connectionType">Type of technology used to connect to mikrotik router.</param>
+            <param name="host">The host (name or ip).</param>
+            <param name="port">TCPIP port.</param>
+            <param name="user">The user.</param>
+            <param name="password">The password.</param>
+            <returns>Opened instance of mikrotik Connection.</returns>
+            <seealso cref="M:tik4net.ITikConnection.Close"/>
+            <exception cref="T:tik4net.TikConnectionLoginException">Invalid credentials.</exception>
+            <exception cref="T:System.Net.Sockets.SocketException">Network connection failed.</exception>
+            <exception cref="T:tik4net.TikCommandTrapException">Some other Tik4Net error.</exception>
+        </member>
+        <member name="T:tik4net.Guard">
+            <summary>
+            Helper class with methods used for checking arguments, type compatibility and so on.
+            Main idea comes from MS-CAB.
+            </summary>
+        </member>
+        <member name="M:tik4net.Guard.ArgumentNotNullOrEmptyString(System.String,System.String)">
+            <summary>
+            Checks a string argument to ensure it isn't null or empty.
+            </summary>
+            <param name="argumentValue">The argument value to check.</param>
+            <param name="argumentName">The name of the argument.</param>
+        </member>
+        <member name="M:tik4net.Guard.ArgumentNotNull(System.Object,System.String)">
+            <summary>
+            Checks an argument to ensure it isn't null.
+            </summary>
+            <param name="argumentValue">The argument value to check.</param>
+            <param name="argumentName">The name of the argument.</param>
+        </member>
+        <member name="M:tik4net.Guard.ArgumentOfType``1(System.Object,System.String)">
+            <summary>
+            Checks an argumen to ensure it is of given type.
+            </summary>
+            <typeparam name="TExpectedType">Expected type.</typeparam>
+            <param name="argumentValue">The argument value to check.</param>
+            <param name="argumentName">The name of the argument.</param>
+        </member>
+        <member name="T:tik4net.ITikCommand">
+            <summary>
+            Provides ADO.NET like api to mikrotik router. Should be used inside of opened <seealso cref="T:tik4net.ITikConnection"/>.
+            </summary>
+            <seealso cref="T:tik4net.ITikConnection"/>
+            <seealso cref="M:tik4net.ITikConnection.CreateCommand"/>
+            <seealso cref="T:tik4net.TikCommandTrapException"/>
+            <seealso cref="T:tik4net.TikCommandFatalException"/>
+            <seealso cref="T:tik4net.TikCommandAbortException"/>
+        </member>
+        <member name="P:tik4net.ITikCommand.Connection">
+            <summary>
+            Connection assigned to command (used to perform operations on router).
+            </summary>
+        </member>
+        <member name="P:tik4net.ITikCommand.CommandText">
+            <summary>
+            Comnmand send to router (in mikrotik API format).
+            </summary>
+        </member>
+        <member name="P:tik4net.ITikCommand.IsRunning">
+            <summary>
+            True when command is already running.
+            </summary>
+            <seealso cref="M:tik4net.ITikCommand.ExecuteAsync(System.Action{tik4net.ITikReSentence},System.Action{tik4net.ITikTrapSentence},System.Action)"/>
+            <seealso cref="M:tik4net.ITikCommand.Cancel"/>
+        </member>
+        <member name="P:tik4net.ITikCommand.Parameters">
+            <summary>
+            Parameters of command (without '=') or filter of query (without '?').
+            </summary>
+        </member>
+        <member name="P:tik4net.ITikCommand.DefaultParameterFormat">
+            <summary>
+            Default value, how will be command parameters formated in mikrotik request. Could be overriden per parameter.
+            </summary>
+        </member>
+        <member name="M:tik4net.ITikCommand.ExecuteNonQuery">
+            <summary>
+            Excecutes given <see cref="P:tik4net.ITikCommand.CommandText"/> on router and ensures that operation was sucessfull.
+            </summary>
+            <exception cref="T:System.InvalidOperationException">Connection or command text not set. Comand is already running. Connection is not opened. Invalid response from API.</exception>
+            <exception cref="T:tik4net.TikCommandTrapException">!trap returned from API call.</exception>
+            <exception cref="T:tik4net.TikCommandFatalException">!fatal returned from API call.</exception>
+            <exception cref="T:tik4net.TikCommandUnexpectedResponseException">Unexpected response from mikrotik (multiple returned rows, missing !done row etc.)</exception>
+            <exception cref="T:tik4net.TikNoSuchCommandException">Invalid mikrotik command (syntax error). Mikrotik API message: 'no such command'</exception>
+            <exception cref="T:tik4net.TikNoSuchItemException">Invalid item (bad id/name etc.). Mikrotik API message: 'no such item'.</exception>
+            <exception cref="T:tik4net.TikAlreadyHaveSuchItemException">Duplicit item (duplicit id/name etc.). Mikrotik API message: 'already have such item'.</exception>
+        </member>
+        <member name="M:tik4net.ITikCommand.ExecuteScalar">
+            <summary>
+            Executes given <see cref="P:tik4net.ITikCommand.CommandText"/> on router and ensures that operation returns one value (=ret parameter) or single value in single !re row, which is returned as result.
+            </summary>
+            <returns>Value returned by router.</returns>
+            <exception cref="T:System.InvalidOperationException">Connection or command text not set. Comand is already running. Connection is not opened. Invalid response from API.</exception>
+            <exception cref="T:tik4net.TikCommandTrapException">!trap returned from API call.</exception>
+            <exception cref="T:tik4net.TikCommandFatalException">!fatal returned from API call.</exception>
+            <exception cref="T:tik4net.TikCommandUnexpectedResponseException">Unexpected response from mikrotik (multiple returned rows, missing !done row etc.)</exception>
+            <exception cref="T:tik4net.TikNoSuchCommandException">Invalid mikrotik command (syntax error). Mikrotik API message: 'no such command'</exception>
+            <exception cref="T:tik4net.TikNoSuchItemException">Invalid item (bad id/name etc.). Mikrotik API message: 'no such item'.</exception>
+            <exception cref="T:tik4net.TikAlreadyHaveSuchItemException">Duplicit item (duplicit id/name etc.). Mikrotik API message: 'already have such item'.</exception>
+        </member>
+        <member name="M:tik4net.ITikCommand.ExecuteScalar(System.String)">
+            <summary>
+            Executes given <see cref="P:tik4net.ITikCommand.CommandText"/> on router and ensures that operation returns single value (<paramref name="target"/> field) in single !re row, which is returned as result.
+            Usefull to return one value from one selected row (for example .id of searched record).
+            </summary>
+            <param name="target">Name of returned field.</param>
+            <returns>Value returned by router.</returns>
+            <exception cref="T:System.InvalidOperationException">Connection or command text not set. Comand is already running. Connection is not opened. Invalid response from API.</exception>
+            <exception cref="T:tik4net.TikCommandTrapException">!trap returned from API call.</exception>
+            <exception cref="T:tik4net.TikCommandFatalException">!fatal returned from API call.</exception>
+            <exception cref="T:tik4net.TikCommandUnexpectedResponseException">Unexpected response from mikrotik (multiple returned rows, missing !done row etc.)</exception>
+            <exception cref="T:tik4net.TikNoSuchCommandException">Invalid mikrotik command (syntax error). Mikrotik API message: 'no such command'</exception>
+            <exception cref="T:tik4net.TikNoSuchItemException">Invalid item (bad id/name etc.). Mikrotik API message: 'no such item'.</exception>
+            <exception cref="T:tik4net.TikAlreadyHaveSuchItemException">Duplicit item (duplicit id/name etc.). Mikrotik API message: 'already have such item'.</exception>
+        </member>
+        <member name="M:tik4net.ITikCommand.ExecuteScalarOrDefault">
+            <summary>
+            Executes given <see cref="P:tik4net.ITikCommand.CommandText"/> on router and returns one value (=ret parameter) or single value in single !re row, which is returned as result. If value is not found, than returns <c>null</c>.
+            </summary>
+            <returns>Value returned by router or <c>null</c>.</returns>
+            <exception cref="T:System.InvalidOperationException">Connection or command text not set. Comand is already running. Connection is not opened. Invalid response from API.</exception>
+            <exception cref="T:tik4net.TikCommandTrapException">!trap returned from API call.</exception>
+            <exception cref="T:tik4net.TikCommandFatalException">!fatal returned from API call.</exception>
+            <exception cref="T:tik4net.TikCommandUnexpectedResponseException">Unexpected response from mikrotik (multiple returned rows, missing !done row etc.)</exception>
+            <exception cref="T:tik4net.TikNoSuchCommandException">Invalid mikrotik command (syntax error). Mikrotik API message: 'no such command'</exception>
+            <exception cref="T:tik4net.TikAlreadyHaveSuchItemException">Duplicit item (duplicit id/name etc.). Mikrotik API message: 'already have such item'.</exception>
+        </member>
+        <member name="M:tik4net.ITikCommand.ExecuteScalarOrDefault(System.String)">
+            <summary>
+            Executes given <see cref="P:tik4net.ITikCommand.CommandText"/> on router and returns one value (=ret parameter) or single value in single !re row, which is returned as result. If value is not found, than returns <paramref name="defaultValue"/>.
+            </summary>
+            <returns>Value returned by router or <paramref name="defaultValue"/>.</returns>
+            <exception cref="T:System.InvalidOperationException">Connection or command text not set. Comand is already running. Connection is not opened. Invalid response from API.</exception>
+            <exception cref="T:tik4net.TikCommandTrapException">!trap returned from API call.</exception>
+            <exception cref="T:tik4net.TikCommandFatalException">!fatal returned from API call.</exception>
+            <exception cref="T:tik4net.TikCommandUnexpectedResponseException">Unexpected response from mikrotik (multiple returned rows, missing !done row etc.)</exception>
+            <exception cref="T:tik4net.TikNoSuchCommandException">Invalid mikrotik command (syntax error). Mikrotik API message: 'no such command'</exception>
+            <exception cref="T:tik4net.TikAlreadyHaveSuchItemException">Duplicit item (duplicit id/name etc.). Mikrotik API message: 'already have such item'.</exception>
+        </member>
+        <member name="M:tik4net.ITikCommand.ExecuteScalarOrDefault(System.String,System.String)">
+            <summary>
+            Executes given <see cref="P:tik4net.ITikCommand.CommandText"/> on router and returns one value (=ret parameter) or single value in single !re row, which is returned as result. If value is not found, than returns <paramref name="defaultValue"/>.
+            Usefull to return one value from one selected row (for example .id of searched record).
+            </summary>
+            <param name="target">Name of returned field.</param>
+            <returns>Value returned by router or <paramref name="defaultValue"/>.</returns>
+            <exception cref="T:System.InvalidOperationException">Connection or command text not set. Comand is already running. Connection is not opened. Invalid response from API.</exception>
+            <exception cref="T:tik4net.TikCommandTrapException">!trap returned from API call.</exception>
+            <exception cref="T:tik4net.TikCommandFatalException">!fatal returned from API call.</exception>
+            <exception cref="T:tik4net.TikCommandUnexpectedResponseException">Unexpected response from mikrotik (multiple returned rows, missing !done row etc.)</exception>
+            <exception cref="T:tik4net.TikNoSuchCommandException">Invalid mikrotik command (syntax error). Mikrotik API message: 'no such command'</exception>
+            <exception cref="T:tik4net.TikAlreadyHaveSuchItemException">Duplicit item (duplicit id/name etc.). Mikrotik API message: 'already have such item'.</exception>
+        </member>
+        <member name="M:tik4net.ITikCommand.ExecuteSingleRow">
+            <summary>
+            Executes given <see cref="P:tik4net.ITikCommand.CommandText"/> on router and ensures that operation returns exactly one row (1x !re and 1x !done) as result.        
+            </summary>
+            <returns>Content of !re sentence.</returns>
+            <exception cref="T:System.InvalidOperationException">Connection or command text not set. Comand is already running. Connection is not opened. Invalid response from API.</exception>
+            <exception cref="T:tik4net.TikCommandTrapException">!trap returned from API call.</exception>
+            <exception cref="T:tik4net.TikCommandFatalException">!fatal returned from API call.</exception>
+            <exception cref="T:tik4net.TikCommandUnexpectedResponseException">Unexpected response from mikrotik (multiple returned rows, missing !done row etc.)</exception>
+            <exception cref="T:tik4net.TikNoSuchCommandException">Invalid mikrotik command (syntax error). Mikrotik API message: 'no such command'</exception>
+            <exception cref="T:tik4net.TikNoSuchItemException">Invalid item (bad id/name etc.). Mikrotik API message: 'no such item'.</exception>
+            <exception cref="T:tik4net.TikCommandAmbiguousResultException">More than one row returned.</exception>
+        </member>
+        <member name="M:tik4net.ITikCommand.ExecuteSingleRowOrDefault">
+            <summary>
+            Executes given <see cref="P:tik4net.ITikCommand.CommandText"/> on router and ensures that operation returns exactly one row (1x !re and 1x !done) as result. If not, <c>null</c> is returned.
+            NOTE: !fail exceptions are handled as usual (throws error).
+            </summary>
+            <returns>Content of !re sentence or null.</returns>
+            <exception cref="T:System.InvalidOperationException">Connection or command text not set. Comand is already running. Connection is not opened. Invalid response from API.</exception>
+            <exception cref="T:tik4net.TikCommandTrapException">!trap returned from API call.</exception>
+            <exception cref="T:tik4net.TikCommandFatalException">!fatal returned from API call.</exception>
+            <exception cref="T:tik4net.TikCommandUnexpectedResponseException">Unexpected response from mikrotik (multiple returned rows, missing !done row etc.)</exception>
+            <exception cref="T:tik4net.TikNoSuchCommandException">Invalid mikrotik command (syntax error). Mikrotik API message: 'no such command'</exception>
+            <exception cref="T:tik4net.TikCommandAmbiguousResultException">More than one row returned.</exception>
+        </member>
+        <member name="M:tik4net.ITikCommand.ExecuteList">
+            <summary>
+            Executes given <see cref="P:tik4net.ITikCommand.CommandText"/> on router and returns all result sentences (all !re sentences) as result.
+            </summary>
+            <returns>List of !re sentences</returns>
+            <exception cref="T:System.InvalidOperationException">Connection or command text not set. Comand is already running. Connection is not opened. Invalid response from API.</exception>
+            <exception cref="T:tik4net.TikCommandTrapException">!trap returned from API call.</exception>
+            <exception cref="T:tik4net.TikCommandFatalException">!fatal returned from API call.</exception>
+            <exception cref="T:tik4net.TikCommandUnexpectedResponseException">Unexpected response from mikrotik (multiple returned rows, missing !done row etc.)</exception>
+            <exception cref="T:tik4net.TikNoSuchCommandException">Invalid mikrotik command (syntax error). Mikrotik API message: 'no such command'</exception>
+        </member>
+        <member name="M:tik4net.ITikCommand.ExecuteList(System.String[])">
+            <summary>
+            Executes given <see cref="P:tik4net.ITikCommand.CommandText"/> on router and returns all result sentences (all !re sentences) as result.
+            </summary>
+            <param name="proplistFields">List of fields to be returned (only subset of fields will be returned).</param>
+            <returns>List of !re sentences</returns>
+            <exception cref="T:System.InvalidOperationException">Connection or command text not set. Comand is already running. Connection is not opened. Invalid response from API.</exception>
+            <exception cref="T:tik4net.TikCommandTrapException">!trap returned from API call.</exception>
+            <exception cref="T:tik4net.TikCommandFatalException">!fatal returned from API call.</exception>
+            <exception cref="T:tik4net.TikCommandUnexpectedResponseException">Unexpected response from mikrotik (multiple returned rows, missing !done row etc.)</exception>
+            <exception cref="T:tik4net.TikNoSuchCommandException">Invalid mikrotik command (syntax error). Mikrotik API message: 'no such command'</exception>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:tik4net.ITikCommand.ExecuteListWithDuration(System.Int32)" -->
+        <!-- Badly formed XML comment ignored for member "M:tik4net.ITikCommand.ExecuteListWithDuration(System.Int32,System.Boolean@,System.String@)" -->
+        <!-- Badly formed XML comment ignored for member "M:tik4net.ITikCommand.ExecuteAsync(System.Action{tik4net.ITikReSentence},System.Action{tik4net.ITikTrapSentence},System.Action)" -->
+        <member name="M:tik4net.ITikCommand.AddParameter(System.String,System.String)">
+            <summary>
+            Adds new instance of parameter to <see cref="P:tik4net.ITikCommand.Parameters"/> list. Type of parameter is resolved from parameter name or from command type.
+            </summary>
+            <param name="name">Parameter name.</param>
+            <param name="value">Parameter value</param>
+            <returns>Instance of added parameter.</returns>
+        </member>
+        <member name="M:tik4net.ITikCommand.AddParameter(System.String,System.String,tik4net.TikCommandParameterFormat)">
+            <summary>
+            Adds new instance of parameter to <see cref="P:tik4net.ITikCommand.Parameters"/> list with specified <paramref name="parameterFormat"/>.
+            </summary>
+            <param name="name">Parameter name.</param>
+            <param name="value">Parameter value</param>
+            <param name="parameterFormat">How will be parameter formated in mikrotik command.</param>
+            <returns>Instance of added parameter.</returns>
+        </member>
+        <member name="M:tik4net.ITikCommand.WithParameter(System.String,System.String)">
+            <summary>
+            Adds new instance of parameter to <see cref="P:tik4net.ITikCommand.Parameters"/> list. Type of parameter is resolved from parameter name or from command type.
+            </summary>
+            <param name="name">Parameter name.</param>
+            <param name="value">Parameter value</param>
+            <returns>Command - builder pattern.</returns>
+        </member>
+        <member name="M:tik4net.ITikCommand.WithParameter(System.String,System.String,tik4net.TikCommandParameterFormat)">
+            <summary>
+            Adds new instance of parameter to <see cref="P:tik4net.ITikCommand.Parameters"/> list with specified <paramref name="parameterFormat"/>.
+            </summary>
+            <param name="name">Parameter name.</param>
+            <param name="value">Parameter value</param>
+            <param name="parameterFormat">How will be parameter formated in mikrotik command.</param>
+            <returns>Command - builder pattern.</returns>
+        </member>
+        <member name="M:tik4net.ITikCommand.AddParameterAndValues(System.String[])">
+            <summary>
+            Adds newly created instances of <see cref="P:tik4net.ITikCommand.Parameters"/>.
+            </summary>
+            <param name="parameterNamesAndValues">Name and value of parameters for command. (name, value, name2, value2, ..., name9, value9, ...). Type of parameter is resolved from parameter name or from command type.</param>
+            <returns>List of created parameters.</returns>
+        </member>
+        <member name="M:tik4net.ITikCommand.Cancel">
+            <summary>
+            Cancells already running async command (should be called on the same instance of <see cref="T:tik4net.ITikCommand"/> on which <see cref="M:tik4net.ITikCommand.ExecuteAsync(System.Action{tik4net.ITikReSentence},System.Action{tik4net.ITikTrapSentence},System.Action)"/> has been called).
+            </summary>
+            <seealso cref="M:tik4net.ITikCommand.ExecuteAsync(System.Action{tik4net.ITikReSentence},System.Action{tik4net.ITikTrapSentence},System.Action)"/>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:tik4net.ITikCommand.CancelAndJoin" -->
+        <!-- Badly formed XML comment ignored for member "M:tik4net.ITikCommand.CancelAndJoin(System.Int32)" -->
+        <member name="T:tik4net.ITikCommandParameter">
+            <summary>
+            Named parameter used by <see cref="T:tik4net.ITikCommand"/>.
+            </summary>
+        </member>
+        <member name="P:tik4net.ITikCommandParameter.Name">
+            <summary>
+            Parameter name. 
+            REMARKS: If starts with one of ?= character, than <see cref="P:tik4net.ITikCommandParameter.ParameterFormat"/> is ignored.
+            </summary>
+        </member>
+        <member name="P:tik4net.ITikCommandParameter.Value">
+            <summary>
+            Parameter value (formated to string as expected by <see cref="T:tik4net.ITikConnection"/>).
+            </summary>
+        </member>
+        <member name="P:tik4net.ITikCommandParameter.ParameterFormat">
+            <summary>
+            Parameter specific format how will be parameter formated in mikrotik request.
+            REMARKS: This value is ignored if <see cref="P:tik4net.ITikCommandParameter.Name"/> starts with one of ?= characters
+            </summary>
+        </member>
+        <member name="T:tik4net.ITikConnection">
+            <summary>
+            Mikrotik Connection. Main object to access mikrotik router.
+            Implementation of interface depends on technology that 
+            is used to access mikrotik (API, SSH, TELNET, ...).
+            <example>
+            using(ITikConnection connection = ConnectionFactory.OpenConnection(TikConnectionType.Api, "192.168.1.1", "user", "pass"))
+            {
+                // ... do work ... 
+                // ... do query ...
+                Connection.Close();
+            }
+            </example>
+            </summary>
+            <seealso cref="T:tik4net.ITikCommand"/>
+            <seealso cref="T:tik4net.TikConnectionException"/>
+            <seealso cref="T:tik4net.TikConnectionNotOpenException"/>
+        </member>
+        <member name="P:tik4net.ITikConnection.DebugEnabled">
+            <summary>
+            If communication should be traced via <see cref="T:System.Diagnostics.Debug"/>. Default is <c>true</c> when Debugger is attached and <c>false</c> if not.
+            You can read communication commands in output window (Debug-Windows-Output) when debugging.
+            </summary>
+        </member>
+        <member name="P:tik4net.ITikConnection.IsOpened">
+            <summary>
+            Gets a value indicating whether is logged on (<see cref="M:tik4net.ITikConnection.Open(System.String,System.Int32,System.String,System.String)"/>).
+            </summary>
+            <value><c>true</c> if is logged on; otherwise, <c>false</c>.</value>
+        </member>
+        <member name="P:tik4net.ITikConnection.Encoding">
+            <summary>
+            Gets or sets communication encoding (how string values are converted to bytes sent to mikrotik router). Default is ASCII.
+            </summary>
+        </member>
+        <member name="P:tik4net.ITikConnection.SendTagWithSyncCommand">
+            <summary>
+            If set to true, .tag is sent also inside of sync commands (mandatory for multi thread connection usage). Default is false.
+            </summary>
+        </member>
+        <member name="P:tik4net.ITikConnection.SendTimeout">
+            <summary>
+                Gets or sets the amount of time a ITikConnection will wait for a send operation to complete successfully. In miliseconds.
+            </summary>
+            <remarks>Must be called before <see cref="M:tik4net.ITikConnection.Open(System.String,System.String,System.String)"/> call.</remarks>
+        </member>
+        <member name="P:tik4net.ITikConnection.ReceiveTimeout">
+            <summary>
+                Gets or sets the amount of time a ITikConnection will wait to receive data once a read operation is initiated. In miliseconds.
+            </summary>
+            <remarks>Must be called before <see cref="M:tik4net.ITikConnection.Open(System.String,System.String,System.String)"/> call.</remarks>
+        </member>
+        <member name="E:tik4net.ITikConnection.OnReadRow">
+            <summary>
+            Event called when row (word) from mikrotik is read by connection.
+            </summary>
+            <remarks>Could be used for debug/logging</remarks>
+            <seealso cref="E:tik4net.ITikConnection.OnWriteRow"/>
+        </member>
+        <member name="E:tik4net.ITikConnection.OnWriteRow">
+            <summary>
+            Event called when row (word) to mikrotik is written  by connection.
+            </summary>
+            <remarks>Could be used for debug/logging</remarks>
+            <seealso cref="E:tik4net.ITikConnection.OnReadRow"/>
+        </member>
+        <member name="M:tik4net.ITikConnection.Open(System.String,System.String,System.String)">
+            <summary>
+            Opens connection to the specified mikrotik host on default port (depends on technology) and perform the logon operation.
+            </summary>
+            <param name="host">The host.</param>
+            <param name="user">The user.</param>
+            <param name="password">The password.</param>
+            <seealso cref="M:tik4net.ITikConnection.Close"/>
+            <exception cref="T:System.Net.Sockets.SocketException">Network connection failed.</exception>
+            <exception cref="T:tik4net.TikConnectionLoginException">Invalid credentials.</exception>
+            <exception cref="T:tik4net.TikCommandTrapException">Some other Tik4Net error.</exception>
+            <exception cref="T:tik4net.TikCommandFatalException">!fatal returned from API call.</exception>
+            <exception cref="T:tik4net.TikCommandUnexpectedResponseException">Unexpected response from mikrotik (multiple returned rows, missing !done row etc.)</exception>
+        </member>
+        <member name="M:tik4net.ITikConnection.Open(System.String,System.Int32,System.String,System.String)">
+            <summary>
+            Opens connection to the specified mikrotik host on specified port and perform the logon operation.
+            </summary>
+            <param name="host">The host (name or ip).</param>
+            <param name="port">TCPIP port.</param>
+            <param name="user">The user.</param>
+            <param name="password">The password.</param>
+            <seealso cref="M:tik4net.ITikConnection.Close"/>
+            <exception cref="T:System.Net.Sockets.SocketException">Network connection failed.</exception>
+            <exception cref="T:tik4net.TikConnectionLoginException">Invalid credentials.</exception>
+            <exception cref="T:tik4net.TikCommandTrapException">Some other Tik4Net error.</exception>
+            <exception cref="T:tik4net.TikCommandFatalException">!fatal returned from API call.</exception>
+            <exception cref="T:tik4net.TikCommandUnexpectedResponseException">Unexpected response from mikrotik (multiple returned rows, missing !done row etc.)</exception>
+        </member>
+        <member name="M:tik4net.ITikConnection.Close">
+            <summary>
+            Performs the logoff operation and closes connection. Called also via Dispose of connector.
+            </summary>
+            <seealso cref="M:tik4net.ITikConnection.Open(System.String,System.Int32,System.String,System.String)"/>
+        </member>
+        <member name="M:tik4net.ITikConnection.CreateCommand">
+            <summary>
+            Factory method - creates empty command specific for connection type with assiged <see cref="P:tik4net.ITikCommand.Connection"/>.
+            </summary>
+            <returns>Commend with assiged <see cref="P:tik4net.ITikCommand.Connection"/>.</returns>
+        </member>
+        <member name="M:tik4net.ITikConnection.CreateCommand(tik4net.TikCommandParameterFormat)">
+            <summary>
+            Factory method - creates empty command specific for connection type with assiged <see cref="P:tik4net.ITikCommand.Connection"/>.
+            </summary>
+            <param name="defaultParameterFormat">How will be parameter formated in mikrotik command - default value for command (could be overriden per parameter).</param>
+            <returns>Commend with assiged <see cref="P:tik4net.ITikCommand.Connection"/>.</returns>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:tik4net.ITikConnection.CreateCommand(System.String,tik4net.ITikCommandParameter[])" -->
+        <!-- Badly formed XML comment ignored for member "M:tik4net.ITikConnection.CreateCommand(System.String,tik4net.TikCommandParameterFormat,tik4net.ITikCommandParameter[])" -->
+        <!-- Badly formed XML comment ignored for member "M:tik4net.ITikConnection.CreateCommandAndParameters(System.String,System.String[])" -->
+        <!-- Badly formed XML comment ignored for member "M:tik4net.ITikConnection.CreateCommandAndParameters(System.String,tik4net.TikCommandParameterFormat,System.String[])" -->
+        <member name="M:tik4net.ITikConnection.CreateParameter(System.String,System.String)">
+            <summary>
+            Factory method - creates parameters instance specific for connection and command type.
+            </summary>
+            <param name="name">Name of the parameter (without '=')</param>
+            <param name="value">Value of the parameter</param>
+            <returns>Created parameter with name and value.</returns>
+            <seealso cref="P:tik4net.ITikCommand.Parameters"/>
+        </member>
+        <member name="M:tik4net.ITikConnection.CreateParameter(System.String,System.String,tik4net.TikCommandParameterFormat)">
+            <summary>
+            Factory method - creates parameters instance specific for connection and command type.
+            </summary>
+            <param name="name">Name of the parameter (without '=')</param>
+            <param name="value">Value of the parameter</param>
+            <param name="parameterFormat">How will be parameter formated in mikrotik command.</param>
+            <returns>Created parameter with name and value.</returns>
+            <seealso cref="P:tik4net.ITikCommand.Parameters"/>
+        </member>
+        <member name="M:tik4net.ITikConnection.CallCommandSync(System.String[])">
+            <summary>
+            Calls command to mikrotik (in connection specific format) and waits for response. Command is called without .tag. If you want to use it, just add it as usual parameter (.tag=1234) as last row.
+            </summary>
+            <param name="commandRows">Rows of one command to be send to mikrotik router (in conection specific format).</param>
+            <returns>List of returned sentences.</returns>
+            <remarks>This is extremly low-level API and should be used only if there is no other way (for example <seealso cref="T:tik4net.ITikCommand"/>).</remarks>
+            <exception cref="T:tik4net.TikConnectionNotOpenException" />
+            <seealso cref="T:tik4net.ITikReSentence"/>
+            <seealso cref="T:tik4net.ITikDoneSentence"/>
+            <seealso cref="T:tik4net.ITikTrapSentence"/>
+            <seealso cref="M:tik4net.ITikCommand.ExecuteNonQuery"/>
+            <seealso cref="M:tik4net.ITikCommand.ExecuteScalar"/>
+            <seealso cref="M:tik4net.ITikCommand.ExecuteSingleRow"/>
+            <seealso cref="M:tik4net.ITikCommand.ExecuteList"/>
+        </member>
+        <member name="M:tik4net.ITikConnection.CallCommandSync(System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Calls command to mikrotik (in connection specific format) and waits for response. Command is called without .tag. If you want to use it, just add it as usual parameter (.tag=1234) as last row.
+            </summary>
+            <param name="commandRows">Rows of one command to be send to mikrotik router (in conection specific format).</param>
+            <returns>List of returned sentences.</returns>
+            <remarks>This is extremly low-level API and should be used only if there is no other way (for example <seealso cref="T:tik4net.ITikCommand"/>).</remarks>
+            <exception cref="T:tik4net.TikConnectionNotOpenException" />
+            <seealso cref="T:tik4net.ITikReSentence"/>
+            <seealso cref="T:tik4net.ITikDoneSentence"/>
+            <seealso cref="T:tik4net.ITikTrapSentence"/>
+            <seealso cref="M:tik4net.ITikCommand.ExecuteNonQuery"/>
+            <seealso cref="M:tik4net.ITikCommand.ExecuteScalar"/>
+            <seealso cref="M:tik4net.ITikCommand.ExecuteSingleRow"/>
+            <seealso cref="M:tik4net.ITikCommand.ExecuteList"/>
+        </member>
+        <!-- Badly formed XML comment ignored for member "M:tik4net.ITikConnection.CallCommandAsync(System.Collections.Generic.IEnumerable{System.String},System.String,System.Action{tik4net.ITikSentence})" -->
+        <member name="T:tik4net.ITikDoneSentence">
+            <summary>
+            Response sentence (<see cref="T:tik4net.ITikSentence"/>) from mikrotik router with !done status. 
+            It is last sentence from sucessfull operation.
+            </summary>
+            <seealso cref="T:tik4net.ITikSentence"/>
+            <seealso cref="T:tik4net.ITikReSentence"/>
+            <seealso cref="T:tik4net.ITikTrapSentence"/>
+        </member>
+        <member name="M:tik4net.ITikDoneSentence.GetResponseWord">
+            <summary>
+            Gets the =ret sentence word (result). Throws exception if property with name =ret has not been returned from mikrotik router as part of done sentence.
+            </summary>
+            <seealso cref="F:tik4net.TikSpecialProperties.Ret"/>        
+        </member>
+        <member name="M:tik4net.ITikDoneSentence.GetResponseWordOrDefault(System.String)">
+            <summary>
+            Gets the =ret sentence word (result). Returns <paramref name="defaultValue"/> if property with name =ret has not been returned from mikrotik router as part of done sentence. 
+            </summary>
+            <seealso cref="F:tik4net.TikSpecialProperties.Ret"/>        
+        </member>
+        <member name="T:tik4net.ITikReSentence">
+            <summary>
+            Response sentence (<see cref="T:tik4net.ITikSentence"/>) from mikrotik router with !re data. 
+            It is data sentence (typically when list of entities is requested).
+            </summary>
+            <seealso cref="T:tik4net.ITikSentence"/>
+            <seealso cref="T:tik4net.ITikDoneSentence"/>
+            <seealso cref="T:tik4net.ITikTrapSentence"/>
+        </member>
+        <member name="M:tik4net.ITikReSentence.GetId">
+            <summary>
+            Gets the .id property. Throws exception if property .id has not been returned from mikrotik router as part of response sentence.
+            </summary>
+            <returns>Value of the .id property.  =.id=value</returns>
+            <exception cref="T:tik4net.TikSentenceException">When word/property has not been found in response sentence.</exception>
+            <seealso cref="F:tik4net.TikSpecialProperties.Id"/>
+        </member>
+        <member name="M:tik4net.ITikReSentence.GetResponseField(System.String)">
+            <summary>
+            Gets the sentence word (one property). Throws exception if property with given name has not been returned from mikrotik router as part of response sentence.
+            </summary>
+            <param name="fieldName">Name of the word (property). =name=value</param>
+            <returns>Value of the word (property) with given <paramref name="fieldName"/>.  =name=value</returns>
+            <exception cref="T:tik4net.TikSentenceException">When word/property has not been found in response sentence.</exception>
+        </member>
+        <member name="M:tik4net.ITikReSentence.TryGetResponseField(System.String,System.String@)">
+            <summary>
+            Tries to get the sentence word (one property). Returns false if property with given name has not been returned from mikrotik router as part of response sentence.
+            </summary>
+            <param name="fieldName">Name of the word (property). =name=value</param>
+            <param name="fieldValue">Value of the word (property) with given <paramref name="fieldName"/>.  =name=value</param>
+            <returns>True if word (property) with given name has been found - has been returned from mikrotik router as part of response sentence</returns>
+        </member>
+        <member name="M:tik4net.ITikReSentence.GetResponseFieldOrDefault(System.String,System.String)">
+            <summary>
+            Gets the sentence word (one property). Resturns <paramref name="defaultValue"/> if property with given name has not been returned from mikrotik router as part of response sentence.
+            </summary>
+            <param name="fieldName">Name of the word (property). =name=value</param>
+            <param name="defaultValue">Default value, which is returned if property with given name has not been returned from mikrotik router as part of response sentence.</param>
+            <returns>Value of the word (property) with given <paramref name="fieldName"/> or <paramref name="defaultValue"/>.  =name=value</returns>
+        </member>
+        <member name="T:tik4net.ITikSentence">
+            <summary>
+            Base of all sentences returned from mikrotik router as response to request.
+            </summary>
+        </member>
+        <member name="P:tik4net.ITikSentence.Words">
+            <summary>
+            All sentence words (properties). {fieldName, value}
+            </summary>
+        </member>
+        <member name="P:tik4net.ITikSentence.Tag">
+            <summary>
+            Tag of sentence (see asynchronous commands fro details).
+            </summary>
+            <seealso cref="M:tik4net.ITikConnection.CallCommandAsync(System.Collections.Generic.IEnumerable{System.String},System.String,System.Action{tik4net.ITikSentence})"/>
+            <seealso cref="M:tik4net.ITikCommand.ExecuteAsync(System.Action{tik4net.ITikReSentence},System.Action{tik4net.ITikTrapSentence},System.Action)"/>
+        </member>
+        <member name="T:tik4net.ITikTrapSentence">
+            <summary>
+            Response sentence (<see cref="T:tik4net.ITikSentence"/>) from mikrotik router with !trap status. 
+            This sentence is returned when any error occurs.
+            </summary>
+            <seealso cref="T:tik4net.ITikSentence"/>
+            <seealso cref="T:tik4net.ITikReSentence"/>
+            <seealso cref="T:tik4net.ITikDoneSentence"/>
+            <see cref="T:tik4net.TikCommandTrapException"/>
+        </member>
+        <member name="P:tik4net.ITikTrapSentence.CategoryCode">
+            <summary>
+            Code of the error category.
+            </summary>
+        </member>
+        <member name="P:tik4net.ITikTrapSentence.CategoryDescription">
+            <summary>
+            Readable description of the <see cref="P:tik4net.ITikTrapSentence.CategoryCode"/>. (taken from documentation)
+            </summary>
+        </member>
+        <member name="P:tik4net.ITikTrapSentence.Message">
+            <summary>
+            Message of the error from mikrotik router.
+            </summary>
+        </member>
+        <member name="T:tik4net.LinqEx">
+            <summary>
+            IEnumerable extensions.
+            </summary>
+        </member>
+        <member name="M:tik4net.LinqEx.ToDictionaryEx``2(System.Collections.Generic.IEnumerable{``1},System.Func{``1,``0})">
+            <summary>
+             Creates a Dictionary from an IEnumerable
+             according to a specified keySelector function.
+            </summary>
+        </member>
+        <member name="M:tik4net.LinqEx.ToDictionaryEx``3(System.Collections.Generic.IEnumerable{``0},System.Func{``0,``1},System.Func{``0,``2})">
+            <summary>
+             Creates a Dictionary from an IEnumerable
+             according to a specified keySelector and valueSelector functions.
+            </summary>
+        </member>
+        <member name="T:tik4net.StringHelper">
+            <summary>
+            Helper class to implement string fuctions from newer .NET - to support .NET 3.5 build.
+            </summary>
+        </member>
+        <member name="M:tik4net.StringHelper.IsNullOrWhiteSpace(System.String)">
+            <summary>
+            Indicates whether the specified string is null or an System.String.Empty string or whitespace.
+            NOTE: string.IsNullOrWhiteSpace with support for .NET 3.5
+            </summary>
+            <param name="str">The string to test.</param>
+            <returns> true if the value parameter is null or an empty string ("") or whitespace; otherwise, false.</returns>
+        </member>
+        <member name="T:tik4net.TikCommandException">
+            <summary>
+            Exception thrown if any error is returned from mikrotik router call or if any command related error occurs.
+            </summary>
+        </member>
+        <member name="P:tik4net.TikCommandException.Command">
+            <summary>
+            Command which throws error.
+            </summary>
+        </member>
+        <member name="M:tik4net.TikCommandException.#ctor(tik4net.ITikCommand,System.String)">
+            <summary>
+            ctor.
+            </summary>
+            <param name="command">Commant that throws exception.</param>
+            <param name="message">Message exception.</param>
+            <param name="code">Code of the error.</param>
+            <param name="codeDescription">Code description of the error.</param>
+        </member>
+        <member name="M:tik4net.TikCommandException.ToString">
+            <summary>
+            Returns exception description.
+            </summary>
+            <returns>Exception description.</returns>
+        </member>
+        <member name="T:tik4net.TikCommandTrapException">
+            <summary>
+            Exception thrown if any error is returned from mikrotik router call. (!TRAP)
+            </summary>
+            <seealso cref="T:tik4net.ITikTrapSentence"/>
+        </member>
+        <member name="P:tik4net.TikCommandTrapException.Code">
+            <summary>
+            Code of the error.
+            </summary>
+            <seealso cref="P:tik4net.ITikTrapSentence.CategoryCode"/>
+        </member>
+        <member name="P:tik4net.TikCommandTrapException.CodeDescription">
+            <summary>
+            Code description of the error.
+            </summary>
+            <seealso cref="P:tik4net.ITikTrapSentence.CategoryDescription"/>
+        </member>
+        <member name="M:tik4net.TikCommandTrapException.#ctor(tik4net.ITikCommand,tik4net.ITikTrapSentence)">
+            <summary>
+            ctor.
+            </summary>
+            <param name="command">Commant that throws exception.</param>
+            <param name="trapSentence">Error=trap sentence returned from mikrotik router as response to <paramref name="command"/> call.</param>
+        </member>
+        <member name="T:tik4net.TikNoSuchCommandException">
+            <summary>
+            Exception thrown when invalid command is performed (invalid syntax). ('no such command' message from API)
+            </summary>
+        </member>
+        <member name="M:tik4net.TikNoSuchCommandException.#ctor(tik4net.ITikCommand,tik4net.ITikTrapSentence)">
+            <summary>
+            ctor.
+            </summary>
+            <param name="command">Commant that throws exception.</param>
+            <param name="trapSentence">Error=trap sentence returned from mikrotik router as response to <paramref name="command"/> call.</param>
+        </member>
+        <member name="T:tik4net.TikNoSuchItemException">
+            <summary>
+            Exception thrown when item with identifier was not found. ('no such item' message from API)
+            </summary>
+        </member>
+        <member name="M:tik4net.TikNoSuchItemException.#ctor(tik4net.ITikCommand,tik4net.ITikTrapSentence)">
+            <summary>
+            ctor.
+            </summary>
+            <param name="command">Commant that throws exception.</param>
+            <param name="trapSentence">Error=trap sentence returned from mikrotik router as response to <paramref name="command"/> call.</param>
+        </member>
+        <member name="M:tik4net.TikNoSuchItemException.#ctor(tik4net.ITikCommand)">
+            <summary>
+            .ctor
+            </summary>
+        </member>
+        <member name="T:tik4net.TikAlreadyHaveSuchItemException">
+            <summary>
+            Exception thrown when item with identifier alraedy exists. (e.q. 'already have device with such name' or 'failure: already have such address' message from API)
+            </summary>
+        </member>
+        <member name="M:tik4net.TikAlreadyHaveSuchItemException.#ctor(tik4net.ITikCommand,tik4net.ITikTrapSentence)">
+            <summary>
+            ctor.
+            </summary>
+            <param name="command">Commant that throws exception.</param>
+            <param name="trapSentence">Error=trap sentence returned from mikrotik router as response to <paramref name="command"/> call.</param>
+        </member>
+        <member name="T:tik4net.TikCommandFatalException">
+            <summary>
+            Exception thrown if fatal  error is returned from mikrotik router call.  (!FATAL)
+            </summary>
+        </member>
+        <member name="M:tik4net.TikCommandFatalException.#ctor(tik4net.ITikCommand,System.String)">
+            <summary>
+            ctor.
+            </summary>
+            <param name="command">Commant that throws exception.</param>
+            <param name="message">Message exception.</param>
+        </member>
+        <member name="T:tik4net.TikCommandAbortException">
+            <summary>
+            Exception thrown if command has been aborted.
+            </summary>
+        </member>
+        <member name="M:tik4net.TikCommandAbortException.#ctor(tik4net.ITikCommand,System.String)">
+            <summary>
+            ctor.
+            </summary>
+            <param name="command">Commant that throws exception.</param>
+            <param name="message">Message exception.</param>
+        </member>
+        <member name="M:tik4net.TikCommandUnexpectedResponseException.#ctor(System.String,tik4net.ITikCommand,tik4net.ITikSentence)">
+            <summary>
+            Initializes a new instance of the <see cref="T:tik4net.TikConnectionException"/> class.
+            </summary>
+            <param name="message">The exception message.</param>
+            <param name="command">The command sent to target.</param>
+            <param name="response">The response from target.</param>
+        </member>
+        <member name="M:tik4net.TikCommandUnexpectedResponseException.#ctor(System.String,tik4net.ITikCommand,System.Collections.Generic.IEnumerable{tik4net.ITikSentence})">
+            <summary>
+            Initializes a new instance of the <see cref="T:tik4net.TikConnectionException"/> class.
+            </summary>
+            <param name="message">The exception message.</param>
+            <param name="command">The command sent to target.</param>
+            <param name="responseList">The response from target.</param>
+        </member>
+        <member name="T:tik4net.TikCommandAmbiguousResultException">
+            <summary>
+            Exception thrown when exactly one item is expected but more than one was returned.
+            </summary>
+        </member>
+        <member name="M:tik4net.TikCommandAmbiguousResultException.#ctor(tik4net.ITikCommand)">
+            <summary>
+            .ctor
+            </summary>
+        </member>
+        <member name="M:tik4net.TikCommandAmbiguousResultException.#ctor(tik4net.ITikCommand,System.Int32)">
+            <summary>
+            .ctor
+            </summary>
+        </member>
+        <member name="T:tik4net.TikCommandParameterFormat">
+            <summary>
+            How parameter will be formated in mikrotik request
+            </summary>
+        </member>
+        <member name="F:tik4net.TikCommandParameterFormat.Default">
+            <summary>
+            Depends on <see cref="P:tik4net.ITikCommand.DefaultParameterFormat"/> (or on method which is executed on command).
+            </summary>
+        </member>
+        <member name="F:tik4net.TikCommandParameterFormat.Filter">
+            <summary>
+            Format: ?name=value  (query).
+            </summary>
+        </member>
+        <member name="F:tik4net.TikCommandParameterFormat.NameValue">
+            <summary>
+            Format: =name=value (set, execute)
+            </summary>
+        </member>
+        <member name="F:tik4net.TikCommandParameterFormat.Tag">
+            <summary>
+            Format .tag=value. <seealso cref="F:tik4net.TikSpecialProperties.Tag"/>
+            </summary>
+        </member>
+        <member name="T:tik4net.TikConnectionCommCallbackEventArgs">
+            <summary>
+            EventArgs used to pass written or read WORD to/from mikrotik router by <see cref="T:tik4net.ITikConnection"/>.
+            </summary>
+        </member>
+        <member name="P:tik4net.TikConnectionCommCallbackEventArgs.Word">
+            <summary>
+            Read or written WORD by <see cref="T:tik4net.ITikConnection"/>.
+            </summary>
+        </member>
+        <member name="M:tik4net.TikConnectionCommCallbackEventArgs.#ctor(System.String)">
+            <summary>
+            ctor
+            </summary>
+            <param name="word">Read or written WORD by <see cref="T:tik4net.ITikConnection"/></param>
+        </member>
+        <member name="T:tik4net.TikConnectionException">
+            <summary>
+            Any exception from mikrotik session.
+            </summary>
+        </member>
+        <member name="M:tik4net.TikConnectionException.#ctor(System.Runtime.Serialization.SerializationInfo,System.Runtime.Serialization.StreamingContext)">
+            <summary>
+            Initializes a new instance of the <see cref="T:tik4net.TikConnectionException"/> class.
+            </summary>
+            <param name="info">The object that holds the serialized object data.</param>
+            <param name="context">The contextual information about the source or destination.</param>
+        </member>
+        <member name="M:tik4net.TikConnectionException.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:tik4net.TikConnectionException"/> class.
+            </summary>
+        </member>
+        <member name="M:tik4net.TikConnectionException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:tik4net.TikConnectionException"/> class.
+            </summary>
+            <param name="message">The message.</param>
+        </member>
+        <member name="M:tik4net.TikConnectionException.#ctor(System.String,System.Exception)">
+            <summary>
+            Initializes a new instance of the <see cref="T:tik4net.TikConnectionException"/> class.
+            </summary>
+            <param name="message">The message.</param>
+            <param name="innerException">The inner exception.</param>
+        </member>
+        <member name="T:tik4net.TikConnectionNotOpenException">
+            <summary>
+            Exception when command is performed via not opened <see cref="T:tik4net.ITikConnection"/>.
+            </summary>
+        </member>
+        <member name="M:tik4net.TikConnectionNotOpenException.#ctor(System.String)">
+            <summary>
+            .ctor
+            </summary>
+            <param name="message"></param>
+        </member>
+        <member name="T:tik4net.TikConnectionLoginException">
+            <summary>
+            Exception when login failed (invalid credentials)
+            </summary>
+        </member>
+        <member name="M:tik4net.TikConnectionLoginException.#ctor">
+            <summary>
+            .ctor
+            </summary>
+        </member>
+        <member name="T:tik4net.TikConnectionType">
+            <summary>
+            Connection type used to access mikrotik router. Default is <see cref="F:tik4net.TikConnectionType.Api"/>.
+            </summary>
+        </member>
+        <member name="F:tik4net.TikConnectionType.Api">
+            <summary>
+            Mikrotik API connection - default value.
+            </summary>
+        </member>
+        <member name="F:tik4net.TikConnectionType.ApiSsl">
+            <summary>
+            Mikrotik API-SSL connection (supports only mode with certificate on mikrotik). See https://github.com/danikf/tik4net/wiki/SSL-connection for details.
+            </summary>
+        </member>
+        <member name="F:tik4net.TikConnectionType.Api_v2">
+            <summary>
+            Mikrotik API connection for then RouterOS version 6.43 and newer.
+            </summary>
+        </member>
+        <member name="F:tik4net.TikConnectionType.ApiSsl_v2">
+            <summary>
+            Mikrotik API-SSL connection for then RouterOS version 6.43 and newer. (supports only mode with certificate on mikrotik). See https://github.com/danikf/tik4net/wiki/SSL-connection for details. 
+            </summary>
+        </member>
+        <member name="F:tik4net.TikConnectionType.Ssh">
+            <summary>
+            SSH connection - NOT IMPLEMENTED YET.
+            </summary>
+        </member>
+        <member name="F:tik4net.TikConnectionType.Telnet">
+            <summary>
+            Telnet connection - NOT IMPLEMENTED YET.
+            </summary>
+        </member>
+        <member name="T:tik4net.TikSentenceException">
+            <summary>
+            Exception called when response sentence from mikrotik router is not in proper format.
+            </summary>
+        </member>
+        <member name="P:tik4net.TikSentenceException.Sentence">
+            <summary>
+            Sentence with error - not proper format.
+            </summary>
+        </member>
+        <member name="M:tik4net.TikSentenceException.#ctor(System.String,tik4net.ITikSentence)">
+            <summary>
+            ctor.
+            </summary>
+            <param name="message">Exception message.</param>
+            <param name="sentecne">Sentence with error - not proper format.</param>
+        </member>
+        <member name="T:tik4net.TikSpecialProperties">
+            <summary>
+            Names of well known properties (set of constants)
+            </summary>
+        </member>
+        <member name="F:tik4net.TikSpecialProperties.Id">
+            <summary>
+            Id property = .id
+            </summary>
+        </member>
+        <member name="F:tik4net.TikSpecialProperties.Proplist">
+            <summary>
+            Proplist property = .proplist
+            </summary>
+        </member>
+        <member name="F:tik4net.TikSpecialProperties.Tag">
+            <summary>
+            .tag property - used to correlate simultaneous command responses.
+            </summary>
+        </member>
+        <member name="F:tik4net.TikSpecialProperties.UnsetValueName">
+            <summary>
+            value-name property used to set name of unset field in unset command
+            </summary>
+        </member>
+        <member name="F:tik4net.TikSpecialProperties.Ret">
+            <summary>
+            Return value from =done sentence. See <see cref="T:tik4net.ITikDoneSentence"/>
+            </summary>
+        </member>
+        <member name="T:tik4net.TikTimeHelper">
+            <summary>
+            Functions to convert MikroTik timespans to useable formats.
+            Credits: D-Bullock 
+            </summary>
+        </member>
+        <member name="M:tik4net.TikTimeHelper.ToTikTime(System.Nullable{System.Int32})">
+            <summary>
+            Convert the seconds passed in to a MikroTik time string
+            </summary>
+            <param name="seconds"></param>
+            <returns>A string in the format the MikroTik expects for it's timespan fields</returns>
+        </member>
+        <member name="M:tik4net.TikTimeHelper.ToTikTime(System.Nullable{System.Int64})">
+            <summary>
+            Convert the seconds passed in to a MikroTik time string
+            </summary>
+            <param name="seconds"></param>
+            <returns>A string in the format the MikroTik expects for it's timespan fields</returns>
+        </member>
+        <member name="M:tik4net.TikTimeHelper.FromTikTimeToSeconds(System.String)">
+            <summary>
+            Convert a MikroTik time string to seconds
+            </summary>
+            <param name="time">The time as specified by MikroTik</param>
+            <returns></returns>
+        </member>
+        <member name="M:tik4net.TikTimeHelper.FromTikTimeToTimeSpan(System.String)">
+            <summary>
+            Convert a MikroTik time string to TimeSpan
+            </summary>
+            <param name="time">The time as specified by MikroTik</param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>
