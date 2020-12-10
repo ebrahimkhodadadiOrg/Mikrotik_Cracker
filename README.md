@@ -1,5 +1,6 @@
 # Mikrotik_Cracker
-Crack Mikrtoik
+
+Sample App to crack mikrotik
 
 > Just Install and Put the User & Pass
 
