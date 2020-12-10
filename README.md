@@ -1,7 +1,7 @@
 # Mikrotik_Cracker
 Crack Mikrtoik
 
-Just Install and Put the User & Pass
+> Just Install and Put the User & Pass
 
-![Screenshot](Capture.png)
+![GitHub Logo](/Capture.png)
 
